@@ -51,13 +51,25 @@ void Renderer::CreateVertexBufferObjects()
 		=
 	{
 		0.0f, 0.0f, 0.0f,
-		1.0f , 0.0f, 0.0f, 
+		1.0f, 0.0f, 0.0f, 
 		1.0f, 1.0f, 0.0f, //Triangle1
 	};
 
 	glGenBuffers(1, &m_VBOTestPos);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestPos);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(testPos), testPos, GL_STATIC_DRAW);
+
+	float testColor[]
+		=
+	{
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f //Triangle1
+	};
+
+	glGenBuffers(1, &m_VBOTestColor);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestColor);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(testColor), testColor, GL_STATIC_DRAW);
 }
 
 void Renderer::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -217,9 +229,15 @@ void Renderer::DrawTest()
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestPos);
 	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 
+	int aColorLoc = glGetAttribLocation(m_SolidRectShader, "a_Color");
+	glEnableVertexAttribArray(aColorLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestColor);
+	glVertexAttribPointer(aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	glDisableVertexAttribArray(attribPosition);
+	glDisableVertexAttribArray(aColorLoc);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
