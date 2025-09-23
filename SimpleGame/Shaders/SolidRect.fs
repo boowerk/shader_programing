@@ -9,11 +9,10 @@ uniform vec4 u_Color;
 void main()
 {
 	// FragColor = vec4(u_Color.r, u_Color.g, u_Color.b, u_Color.a);
-	
-	if (v_Color.b < 0.5f && v_Color.r < 0.5f) {
+	if(v_Color.b < 0.5f){
 		FragColor = v_Color;
-    } 
-	else {
-        discard;
+	}
+	else{
+		discard;
 	}
 }
