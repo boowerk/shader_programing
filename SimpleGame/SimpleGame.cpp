@@ -2,7 +2,7 @@
 Copyright 2022 Lee Taek Hee (Tech University of Korea)
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the What The Hell License. Do it plz. 
+it under the terms of the What The Hell License. Do it plz.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY.
@@ -16,19 +16,17 @@ but WITHOUT ANY WARRANTY.
 #include "Renderer.h"
 
 Renderer *g_Renderer = NULL;
-
-bool g_bNeedReloadShaderProgram = false;
+bool g_bNeedReloadShaderPrograms = false;
 
 void RenderScene(void)
 {
-	if (g_bNeedReloadShaderProgram)
+	if (g_bNeedReloadShaderPrograms)
 	{
-		g_Renderer->ReloadAllShaderProgram();
-		g_bNeedReloadShaderProgram = false;
+		g_Renderer->ReloadAllShaderPrograms();
+		g_bNeedReloadShaderPrograms = false;
 	}
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Renderer Test
 	// g_Renderer->DrawSolidRect(0, 0, 0, 100, 1, 1, 1, 1);
@@ -52,7 +50,7 @@ void KeyInput(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case '1':
-		g_bNeedReloadShaderProgram = true;
+		g_bNeedReloadShaderPrograms = true;
 		break;
 	default:
 		break;
