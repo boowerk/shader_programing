@@ -19,6 +19,7 @@ public:
 	void DrawTest();
 	void DrawParticle();
 	void DrawMesh();
+	void DrawFullScreenColor(float r, float g, float b, float a);
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -50,13 +51,20 @@ private:
 	float m_time = 0;
 
 	// Particle
-	GLuint m_ParticleShader = 0;
-	GLuint m_VBOParticle = 0;
+	GLuint m_ParticleShader			= 0;
+	GLuint m_VBOParticle			= 0;
 	GLuint m_VBOParticleVertexCount = 0;
 
 	// Grid Mesh
-	GLuint m_GridMeshVBO = 0;
-	GLuint m_GridMeshVertexCount = 0;
-	GLuint m_GridMeshShader = 0;
+	GLuint m_GridMeshVBO			= 0;
+	GLuint m_GridMeshVertexCount	= 0;
+	GLuint m_GridMeshShader			= 0;
+
+	/// Full Screen
+	GLuint m_FullScreenVBO		= 0;
+	GLuint m_FullScreenShader	= 0;
+
+	// Rain drop
+	float m_Points[100 * 4];
 };
 

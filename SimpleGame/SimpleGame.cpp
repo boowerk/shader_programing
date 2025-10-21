@@ -25,13 +25,14 @@ void RenderScene(void)
 		g_Renderer->ReloadAllShaderPrograms();
 		g_bNeedReloadShaderPrograms = false;
 	}
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	g_Renderer->DrawFullScreenColor(0, 0, 0, 0.1);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Renderer Test
 	// g_Renderer->DrawSolidRect(0, 0, 0, 100, 1, 1, 1, 1);
 	// g_Renderer->DrawTest();
-	g_Renderer->DrawParticle();
+	// g_Renderer->DrawParticle();
 	g_Renderer->DrawMesh();
 
 	glutSwapBuffers();
@@ -68,7 +69,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(500, 500);
+	glutInitWindowSize(1000, 1000);
 	glutCreateWindow("Game Software Engineering KPU");
 
 	glewInit();
@@ -82,7 +83,7 @@ int main(int argc, char **argv)
 	}
 
 	// Initialize Renderer
-	g_Renderer = new Renderer(500, 500);
+	g_Renderer = new Renderer(1000, 1000);
 	if (!g_Renderer->IsInitialized())
 	{
 		std::cout << "Renderer could not be initialized.. \n";
