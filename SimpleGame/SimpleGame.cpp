@@ -27,7 +27,7 @@ void RenderScene(void)
 	}
 	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// g_Renderer->DrawFullScreenColor(0, 0, 0, 0.1);
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	// glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Renderer Test
 	// g_Renderer->DrawSolidRect(0, 0, 0, 100, 1, 1, 1, 1);
