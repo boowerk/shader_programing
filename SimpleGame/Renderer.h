@@ -20,6 +20,7 @@ public:
 	void DrawParticle();
 	void DrawMesh();
 	void DrawFullScreenColor(float r, float g, float b, float a);
+	void DrawFS();
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -36,19 +37,19 @@ private:
 
 	bool m_Initialized = false;
 	
-	unsigned int m_WindowSizeX = 0;
-	unsigned int m_WindowSizeY = 0;
+	unsigned int m_WindowSizeX		= 0;
+	unsigned int m_WindowSizeY		= 0;
 
-	GLuint m_VBORect = 0;
-	GLuint m_SolidRectShader = 0;
+	GLuint m_VBORect				= 0;
+	GLuint m_SolidRectShader		= 0;
 
 	// lecture2,3
-	GLuint m_VBOtestPos = 0;
-	GLuint m_VBOtestColor = 0;
-	GLuint m_TestShader = 0;
+	GLuint m_VBOtestPos				= 0;
+	GLuint m_VBOtestColor			= 0;
+	GLuint m_TestShader				= 0;
 
 	// Time
-	float m_time = 0;
+	float m_time					= 0;
 
 	// Particle
 	GLuint m_ParticleShader			= 0;
@@ -61,10 +62,14 @@ private:
 	GLuint m_GridMeshShader			= 0;
 
 	/// Full Screen
-	GLuint m_FullScreenVBO		= 0;
-	GLuint m_FullScreenShader	= 0;
+	GLuint m_FullScreenVBO			= 0;
+	GLuint m_FullScreenShader		= 0;
 
 	// Rain drop
 	float m_Points[100 * 4];
+
+	// Fragment shader factory
+	GLuint m_FSVBO					= 0;
+	GLuint m_FSShader				= 0;
 };
 
