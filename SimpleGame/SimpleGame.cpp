@@ -64,7 +64,8 @@ void SpecialKeyInput(int key, int x, int y)
 }
 
 int main(int argc, char **argv)
-{
+{	
+	// abcdef
 	// Initialize GL things
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
