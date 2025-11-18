@@ -36,26 +36,27 @@ void Circless()
 
 void Flag()
 {
-    vec2 newUV = vec2(v_UV.x, 1 - v_UV.y - 0.5);  // 0-1, left bottom (0,0)
+    vec2 newUV = vec2(v_UV.x, (1 - v_UV.y) - 0.5 );
+    float sinValue = v_UV.x * 0.2 * sin(v_UV.x * 2 * c_PI - u_Time * 10);
     vec4 newColor = vec4(0);
+    
+    float width = 0.2 * (1 - newUV.x);
 
-    // float width = 0.2f - v_UV.x * 0.2;
-    float width = 0.2f * (1 - newUV.x);
-    float sinValue = v_UV.x * 0.2 * sin(newUV.x * 2 * c_PI - u_Time * 10);
-
-    if(newUV.y < sinValue + width && newUV.y > sinValue - width && width > 0)
+    if (sinValue + width > newUV.y && sinValue - width < newUV.y)
     {
         newColor = vec4(1);
     }
-    else{
+    else
+    {
         discard;
     }
+
     FragColor = newColor;
 }
 
 void main()
 {
     // Test();
-    Circless();
-    // Flag();
+    // Circless();
+    Flag();
 }
