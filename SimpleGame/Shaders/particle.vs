@@ -14,8 +14,8 @@ out vec4 v_Color;
 uniform float u_Time;
 uniform vec3 u_Force;
 
-const float c_PI		= 3.141592;
-const vec2 c_G			= vec2(0, -9.8);
+const float c_PI = 3.141592;
+const vec2 c_G = vec2(0, -9.8);
 
 void raining()
 {
@@ -53,36 +53,34 @@ void raining()
 
 void sinParticle()
 {
-	vec4 centerC		= vec4(1,0,0,1);
-	vec4 borderC		= vec4(1,1,1,0);
+	vec4 centerC = vec4(1,0,0,1);
+	vec4 borderC = vec4(1,1,1,0);
 
-	float newTime		= u_Time - a_STime; 
-	float lifeTime		= a_LifeTime;
-	float newAlpha		= 1.0f;
-	vec4 newColor		= a_Color;
-	vec4 newPosition	= vec4(a_Position, 1.0f);
+	float newTime = u_Time - a_STime; 
+	float lifeTime = a_LifeTime;
+	float newAlpha = 1.0f;
+	vec4 newColor = a_Color;
+	vec4 newPosition = vec4(a_Position, 1.0f);
 
 	if(newTime > 0){
-		float period	= a_Period * 4;
-		float t			= fract(newTime/lifeTime) * lifeTime;
-		float tt		= t * t;
-		float x			= t * 2 - 1.f;
-		float y			= t * sin(t * 2 * c_PI * period) * ((a_Value -0.5) * 2.f);
-
+		float period = a_Period;
+		float t = fract(newTime/lifeTime) * lifeTime;
+		float tt = newTime * newTime;
+		float x = t * 2 - 1.f;
+		float y = t * sin(t *2 * c_PI * period) * ((a_Value -0.5) * 2.f);
 		y *= sin(fract(newTime/lifeTime) * c_PI);
-		
 		newPosition.xy += vec2(x,y);
 		newAlpha = 1.0f - t/lifeTime;
 
 		newColor = mix(centerC, borderC, abs(y * 8));
 	}
-	else{	
+	else{
 		newPosition.xy = vec2(-1000000,0);
 	}
-		
+
 
 	gl_Position = newPosition;
-	v_Color = vec4(newColor.rgb, newAlpha);	// a_Color
+	v_Color = newColor;	// a_Color
 }
 
 void circleParticle()
@@ -96,19 +94,13 @@ void circleParticle()
 	{
 		float t = fract(newTime/lifeTime) * lifeTime;
 		float tt = t * t;
-		float theta = a_Value * 2.0 * c_PI;  // 0 ~ 2¥ð
 
-		float x = 16.0 * pow(sin(theta), 3.0);
-		float y = 13.0 * cos(theta) - 5.0 * cos(2.0 * theta)
-        - 2.0 * cos(3.0 * theta) - cos(4.0 * theta);
-
-		x *= 0.05;
-		y *= 0.05;
-
+		float x = sin(a_Value * 2 * c_PI);
+		float y = cos(a_Value * 2 * c_PI);
 		float newX = x + 0.5 * c_G.x * tt;
 		float newY = y + 0.5 * c_G.y * tt;
 
-		newPosition.xy += vec2(newX,newY);
+		newPosition.xy += vec2(newX,newY);	//S_O
 
 		newAlpha = 1.0f - t/lifeTime;
 	}
