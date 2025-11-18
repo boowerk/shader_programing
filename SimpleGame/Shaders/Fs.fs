@@ -54,9 +54,27 @@ void Flag()
     FragColor = newColor;
 }
 
+void Q1()
+{
+    float newX      = v_UV.x;
+    float newY      = 1 - abs((v_UV.y * 2) - 1);
+
+    FragColor       = texture(u_RGBTexture, vec2(newX, newY));
+}
+
+void Q2()
+{
+    float newX      = fract(v_UV.x * 3);
+    float newY      = (2 - floor(v_UV.x * 3)) / 3 + v_UV.y / 3;
+
+    FragColor       = texture(u_RGBTexture, vec2(newX, newY));
+}
+
 void main()
 {
     // Test();
     // Circless();
-    Flag();
+    // Flag();
+    // Q1();
+    Q2();
 }
