@@ -23,6 +23,8 @@ public:
 	void DrawGridMesh();
 	void DrawFullScreenColor(float r, float g, float b, float a);
 	void DrawFS();
+	void DrawDebugTextures();
+	void DrawFBOs();
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -36,6 +38,8 @@ private:
 	void GetGLPosition(float x, float y, float *newX, float *newY);
 	void GenerateParticles(int numParticle);
 	GLuint CreatePngTexture(char* filePath, GLuint samplingMethod);
+	void DrawTexture(float x, float y, float sx, float sy, GLuint texID);
+	void CreateFBOs();
 
 	bool m_Initialized = false;
 	
@@ -75,6 +79,34 @@ private:
 	GLuint m_FSShader = 0;
 
 	GLuint m_RGBTexture = 0;
-	GLuint m_Texture = 0;
+	GLuint m_TextureTwice = 0;
+	GLuint m_0Texture = 0;
+	GLuint m_1Texture = 0;
+	GLuint m_2Texture = 0;
+	GLuint m_3Texture = 0;
+	GLuint m_4Texture = 0;
+	GLuint m_5Texture = 0;
+	GLuint m_6Texture = 0;
+	GLuint m_7Texture = 0;
+	GLuint m_8Texture = 0;
+	GLuint m_9Texture = 0;
+	GLuint m_numTexture = 0;
+
+	// Texture
+	GLuint m_TexVBO = 0;
+	GLuint m_TexShader = 0;
+
+	// FBOs
+	GLuint m_FBO0 = 0;
+	GLuint m_FBO1 = 0;
+	GLuint m_FBO2 = 0;
+	GLuint m_FBO3 = 0;
+	GLuint m_FBO4 = 0;
+
+	GLuint m_RT0 = 0;
+	GLuint m_RT1 = 0;
+	GLuint m_RT2 = 0;
+	GLuint m_RT3 = 0;
+	GLuint m_RT4 = 0;
 };
 
