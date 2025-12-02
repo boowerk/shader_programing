@@ -44,6 +44,7 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	m_8Texture = CreatePngTexture("./8.png", GL_NEAREST);
 	m_9Texture = CreatePngTexture("./9.png", GL_NEAREST);
 	m_numTexture = CreatePngTexture("./numbers.png", GL_NEAREST);
+	m_ParticleTexture = CreatePngTexture("./partilce.png", GL_NEAREST);
 
 	CreateFBOs();
 
@@ -594,7 +595,7 @@ void Renderer::DrawFS()
 	glDisable(GL_BLEND);
 }
 
-void Renderer::DrawTexture(float x, float y, float sx, float sy, GLuint TexID)
+void Renderer::DrawTexture(float x, float y, float sx, float sy, GLuint TexID, GLuint TexID1, GLuint method)
 {
 	// sx, sy --- 비율로 받냐, 절대 크기로 받냐... 선택임 ratio 로 받는걸로 하자
 
@@ -605,15 +606,21 @@ void Renderer::DrawTexture(float x, float y, float sx, float sy, GLuint TexID)
 
 	int uTex = glGetUniformLocation(shader, "u_TexID");
 	glUniform1i(uTex, 0);
+	int uTex1 = glGetUniformLocation(shader, "u_TexID1");
+	glUniform1i(uTex1, 1);
 	int uSize = glGetUniformLocation(shader, "u_Size");
 	glUniform2f(uSize, sx, sy);
 	int uTran = glGetUniformLocation(shader, "u_Tran");
 	glUniform2f(uTran, x, y);
 	int uTime = glGetUniformLocation(shader, "u_Time");
 	glUniform1f(uTime, m_time);
+	int uMethod = glGetUniformLocation(shader, "u_Method");
+	glUniform1i(uMethod, method);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, TexID);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, TexID1);
 
 	int aPosition = glGetAttribLocation(shader, "a_Position");
 	int aTex = glGetAttribLocation(shader, "a_Tex");
@@ -636,8 +643,8 @@ void Renderer::DrawTexture(float x, float y, float sx, float sy, GLuint TexID)
 
 void Renderer::DrawDebugTextures()
 {
-	DrawTexture(-0.5, -0.5, 0.5, 0.5, m_RT0_0);
-	DrawTexture( 0.5, -0.5, 0.5, 0.5, m_RT0_1);
+	DrawTexture(-0.5, -0.5, 0.5, 0.5, m_PingpongTexture[0], 0, 0);
+	DrawTexture( 0.5, -0.5, 0.5, 0.5, m_PingpongTexture[1], 0, 0);
 }
 
 void Renderer::DrawFBOs()
@@ -659,6 +666,30 @@ void Renderer::DrawFBOs()
 
 
 	// RestoreFBO
+	glViewport(0, 0, 512, 512);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); //초기화 코드
+}
+
+void Renderer::DrawBloomParticle()
+{
+	// 1. render to HDRFBO0 (rt: HDRRT0_0, HDRRT0_1)
+	glBindFramebuffer(GL_FRAMEBUFFER, m_HDRFBO0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	DrawParticle();
+
+	// 2. blur
+	for (int i = 0; i < 20; ++i)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_PingpongFBO[1]);
+		DrawTexture(0, 0, 1, 1, m_PingpongTexture[0], 0, 2);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_PingpongFBO[0]);
+		DrawTexture(0, 0, 1, 1, m_PingpongTexture[1], 0, 1);
+	}
+	
+	// 3. Merge
+	DrawTexture(0, 0, 1, 1, m_HDRRT0_0, m_PingpongTexture[0], 3);
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glViewport(0, 0, 512, 512);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); //초기화 코드
 }
@@ -713,6 +744,10 @@ void Renderer::DrawParticle()
 	GLuint shader = m_ParticleShader;
 	glUseProgram(shader);
 
+	GLenum DrawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, DrawBuffers);
+
+
 	int uTimeLoc = glGetUniformLocation(shader,
 		"u_Time");
 	glUniform1f(uTimeLoc, m_time);
@@ -720,6 +755,13 @@ void Renderer::DrawParticle()
 	int uForceLoc = glGetUniformLocation(shader,
 		"u_Force");
 	glUniform3f(uForceLoc, std::sin(m_time), 0, 0);
+
+	int uTexLoc = glGetUniformLocation(shader,
+		"u_Texture");
+	glUniform1i(uTexLoc, 0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_ParticleTexture);
 
 	int aPosLoc = glGetAttribLocation(shader, "a_Position");
 	int aValueLoc = glGetAttribLocation(shader, "a_Value");
@@ -729,8 +771,9 @@ void Renderer::DrawParticle()
 	int aLifeTimeLoc = glGetAttribLocation(shader, "a_LifeTime");
 	int aMassLoc = glGetAttribLocation(shader, "a_Mass");
 	int aPeriodLoc = glGetAttribLocation(shader, "a_Period");
+	int aTexLoc = glGetAttribLocation(shader, "a_Tex");
 
-	int stride = 15;
+	int stride = 17;
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOParticle);
@@ -742,6 +785,7 @@ void Renderer::DrawParticle()
 	glEnableVertexAttribArray(aLifeTimeLoc);
 	glEnableVertexAttribArray(aMassLoc);
 	glEnableVertexAttribArray(aPeriodLoc);
+	glEnableVertexAttribArray(aTexLoc);
 	
 	glVertexAttribPointer(aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(float) * stride, 0);
 	glVertexAttribPointer(aValueLoc, 1, GL_FLOAT, GL_FALSE, sizeof(float) * stride, (GLvoid*)(sizeof(float) * 3));
@@ -751,7 +795,7 @@ void Renderer::DrawParticle()
 	glVertexAttribPointer(aLifeTimeLoc, 1, GL_FLOAT, GL_FALSE, sizeof(float) * stride, (GLvoid*)(sizeof(float) * 12));
 	glVertexAttribPointer(aMassLoc, 1, GL_FLOAT, GL_FALSE, sizeof(float) * stride, (GLvoid*)(sizeof(float) * 13));
 	glVertexAttribPointer(aPeriodLoc, 1, GL_FLOAT, GL_FALSE, sizeof(float) * stride, (GLvoid*)(sizeof(float) * 14));
-
+	glVertexAttribPointer(aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(float) * stride, (GLvoid*)(sizeof(float) * 15));
 	
 
 	glDrawArrays(GL_TRIANGLES, 0, m_VBOParticleVertexCount);	// m_VBOParticleVertexCount
@@ -773,7 +817,7 @@ void Renderer::GetGLPosition(float x, float y, float *newX, float *newY)
 
 void Renderer::GenerateParticles(int numParticle)
 {
-	int floatCountPervertex = 3 + 1 + 4 + 1 + 3 + 1 + 1 + 1; // x, y, z, value, r, g, b, a, sTime, vx, vy, vz, lifeTime, mass, period
+	int floatCountPervertex = 3 + 1 + 4 + 1 + 3 + 1 + 1 + 1 + 2; // x, y, z, value, r, g, b, a, sTime, vx, vy, vz, lifeTime, mass, period, tx ,ty
 	int verticesCountPerParticle = 6;
 	int floatCountPerParticle = floatCountPervertex * verticesCountPerParticle;
 	int totalVerticesCount = numParticle * verticesCountPerParticle;
@@ -821,6 +865,8 @@ void Renderer::GenerateParticles(int numParticle)
 		vertices[index++] = lifeTime;
 		vertices[index++] = mass;
 		vertices[index++] = period;
+		vertices[index++] = 0;
+		vertices[index++] = 0;
 		
 
 		vertices[index++] = x + size;		// v2
@@ -838,6 +884,8 @@ void Renderer::GenerateParticles(int numParticle)
 		vertices[index++] = lifeTime;
 		vertices[index++] = mass;
 		vertices[index++] = period;
+		vertices[index++] = 1;
+		vertices[index++] = 0;
 
 		vertices[index++] = x + size;		// v3
 		vertices[index++] = y + size;
@@ -854,6 +902,8 @@ void Renderer::GenerateParticles(int numParticle)
 		vertices[index++] = lifeTime;
 		vertices[index++] = mass;
 		vertices[index++] = period;
+		vertices[index++] = 1;
+		vertices[index++] = 1;
 
 		vertices[index++] = x - size;		// v4
 		vertices[index++] = y + size;
@@ -870,6 +920,8 @@ void Renderer::GenerateParticles(int numParticle)
 		vertices[index++] = lifeTime;
 		vertices[index++] = mass;
 		vertices[index++] = period;
+		vertices[index++] = 0;
+		vertices[index++] = 1;
 
 		vertices[index++] = x - size;		// v5
 		vertices[index++] = y - size;
@@ -886,6 +938,8 @@ void Renderer::GenerateParticles(int numParticle)
 		vertices[index++] = lifeTime;
 		vertices[index++] = mass;
 		vertices[index++] = period;
+		vertices[index++] = 0;
+		vertices[index++] = 0;
 
 		vertices[index++] = x + size;		// v6
 		vertices[index++] = y + size;
@@ -902,6 +956,8 @@ void Renderer::GenerateParticles(int numParticle)
 		vertices[index++] = lifeTime;
 		vertices[index++] = mass;
 		vertices[index++] = period;
+		vertices[index++] = 1;
+		vertices[index++] = 1;
 	}
 
 	glGenBuffers(1, &m_VBOParticle);
@@ -972,7 +1028,7 @@ void Renderer::CreateFBOs()
 
 	// Attach to FBO 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 		GL_TEXTURE_2D, m_RT0_0, 0);	// GL_COLOR_ATTACHMENT0 0 => location 0와 연관 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
 		GL_TEXTURE_2D, m_RT0_1, 0);
@@ -986,7 +1042,9 @@ void Renderer::CreateFBOs()
 	{
 		assert(0);
 	}
-	
+
+
+
 	// Gen Color Buffer
 	glGenTextures(1, &m_RT1_0);
 	glBindTexture(GL_TEXTURE_2D, m_RT1_0);
@@ -1030,6 +1088,79 @@ void Renderer::CreateFBOs()
 		assert(0);
 	}
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+	// Gen Color Buffer
+	textureId; glGenTextures(1, &m_HDRRT0_0);
+	glBindTexture(GL_TEXTURE_2D, m_HDRRT0_0);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+	// Gen Color Buffer
+	textureId; glGenTextures(1, &m_HDRRT0_1);
+	glBindTexture(GL_TEXTURE_2D, m_HDRRT0_1);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+	// Gen Depth Buffer
+	depthBuffer;
+	glGenRenderbuffers(1, &depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 512, 512);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	// 랜더 버퍼랑 댑스 버퍼의 차이?
+
+	// Gen FBO
+	glGenFramebuffers(1, &m_HDRFBO0);
+
+	// Attach to FBO 
+	glBindFramebuffer(GL_FRAMEBUFFER, m_HDRFBO0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		GL_TEXTURE_2D, m_HDRRT0_0, 0);	// GL_COLOR_ATTACHMENT0 0 => location 0와 연관 
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+		GL_TEXTURE_2D, m_HDRRT0_1, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+		GL_RENDERBUFFER, depthBuffer);
+
+
+	// Check
+	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+	{
+		assert(0);
+	}
+
+
+	glGenFramebuffers(2, m_PingpongFBO);
+	glGenTextures(2, m_PingpongTexture);
+	for (int i = 0; i < 2; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_PingpongFBO[i]);
+		glBindTexture(GL_TEXTURE_2D, m_PingpongTexture[i]);
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RGBA16F, 512, 512, 0, GL_RGBA, GL_FLOAT, NULL
+		);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_PingpongTexture[i], 0);
+		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cout << "fbo creation failed" << std::endl;
+		}
+	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
