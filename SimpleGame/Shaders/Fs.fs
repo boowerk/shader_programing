@@ -1,28 +1,29 @@
 #version 330
 
 layout(location=0) out vec4 FragColor;
+layout(location=1) out vec4 FragColor1;
 
 in vec2 v_UV;
 
 uniform sampler2D u_RGBTexture;
-
-uniform float u_Time;       // 시간(초 단위)
 uniform sampler2D u_DigitTexture;
 uniform sampler2D u_NumTexture;
 
+uniform float u_Time;       // 시간(초 단위)
+
 const float c_PI = 3.14159265;
 
-void Test()
+vec4 Test()
 {
     vec2 newUV = v_UV;
     float dx = 0.1f * cos(v_UV.x * 2 * c_PI + u_Time);
     float dy = 0.1f * sin(v_UV.x * 2 * c_PI + u_Time);
     newUV += vec2(dx, dy);
     vec4 sampledColor = texture(u_RGBTexture, newUV);
-    FragColor = sampledColor;
+    return sampledColor;
 }
 
-void Circless()
+vec4 Circless()
 {
     vec2 newUV = v_UV;
     vec2 center = vec2(0.5, 0.5);
@@ -32,11 +33,11 @@ void Circless()
     float value = sin(d * 8 * c_PI - u_Time);
     newColor = vec4(value);
 
-    FragColor = newColor;
+    return newColor;
 
 }
 
-void Flag()
+vec4 Flag()
 {
     vec2 newUV = vec2(v_UV.x, 1 - v_UV.y - 0.5);  // 0-1, left bottom (0,0)
     vec4 newColor = vec4(0);
@@ -50,45 +51,45 @@ void Flag()
         newColor = vec4(1);
     }
     else{
-        discard;
+        // discard;
     }
-    FragColor = newColor;
+    return newColor;
 }
 
 // 좌표 꼬아보기
 // 수식을 사용하여 if문 없이 발표자료 1을 결과를 만들어보자
-void Q1()
+vec4 Q1()
 {
     vec2 newUV = vec2(v_UV.x, v_UV.y);  // 0-1, left top (0,0)
     float x = newUV.x;  // 0-1
     float y = 1 - abs((v_UV.y - 0.5) * 2);  // -0.5 - 0.5 => -1~1 => 1~0~1 => 0~1~0
     vec4 newColor = texture(u_RGBTexture, vec2(x,y));
 
-    FragColor = newColor;
+    return newColor;
 }
 
 
-void Q2()
+vec4 Q2()
 {
     vec2 newUV = vec2(v_UV.x, v_UV.y);  // 0-1, left top (0,0)
     float x = fract(newUV.x * 3);  // 0-1 (3)
     float y = (2 - floor(newUV.x * 3))/3 + newUV.y / 3; // 
     vec4 newColor = texture(u_RGBTexture, vec2(x,y));
 
-    FragColor = newColor;
+    return newColor;
 }
 
-void Q3()
+vec4 Q3()
 {
     vec2 newUV = vec2(v_UV.x, v_UV.y);  // 0-1, left top (0,0)
     float x = fract(newUV.x * 3);  // 0-1 (3)
     float y = (floor(newUV.x * 3))/3 + newUV.y / 3; // 
     vec4 newColor = texture(u_RGBTexture, vec2(x,y));
 
-    FragColor = newColor;
+    return newColor;
 }
 
-void Q4()
+vec4 Q4()
 {
     vec2 newUV = vec2(v_UV.x, v_UV.y);  // 0-1, left top (0,0)
     float value = floor(newUV.y * 2) / 2 + 0.5;   // 0, 1 => 0.5 1
@@ -96,10 +97,10 @@ void Q4()
     float y = newUV.y * 2; // 
     vec4 newColor = texture(u_RGBTexture, vec2(x,y));
 
-    FragColor = newColor;
+    return newColor;
 }
 
-void Brick_Horizontal()
+vec4 Brick_Horizontal()
 {
     vec2 newUV = vec2(v_UV.x, v_UV.y);  // 0-1, left top (0,0)
 
@@ -112,31 +113,31 @@ void Brick_Horizontal()
     float y = fract(newUV.y * rCount);  // 0-1
     vec4 newColor = texture(u_RGBTexture, vec2(x,y));
 
-    FragColor = newColor;
+    return newColor;
 }
 
-void Q5()
+vec4 Q5()
 {
     vec2 newUV = vec2(v_UV.x, v_UV.y);  // 0-1, left top (0,0)
     float x = fract(newUV.x * 2);  // 0-1 
     float y = fract(newUV.y * 2) + floor(newUV.x*2) * 0.5;  // 0-1
     vec4 newColor = texture(u_RGBTexture, vec2(x,y));
 
-    FragColor = newColor;
+    return newColor;
 }
 
-void Brick_Vertical()
+vec4 Brick_Vertical()
 {
     vec2 newUV = vec2(v_UV.x, v_UV.y);  // 0-1, left top (0,0)
     float x = fract(newUV.x * 2) ;  // 0-1 
     float y = fract(newUV.y * 2)+ floor(newUV.x*2) * 0.5;  // offset : 0, 0.5
     vec4 newColor = texture(u_RGBTexture, vec2(x,y));
 
-    FragColor = newColor;
+    return newColor;
 }
 
 // GLSL Fragment Shader Function
-void Brick_Horizontal_AI()
+vec4 Brick_Horizontal_AI()
 {
     vec2 uv = v_UV.xy; // 0-1, left top (0,0)
 
@@ -218,15 +219,15 @@ void Brick_Horizontal_AI()
     float ambient = 0.3;
     vec4 finalColor = baseColor * (diffuse + ambient);
 
-    FragColor = finalColor;
+    return finalColor;
 }
 
-void Digit()
+vec4 Digit()
 {
-    FragColor = texture(u_DigitTexture, v_UV);
+    return texture(u_DigitTexture, v_UV);
 }
 
-void Digit_Num()
+vec4 Digit_Num()
 {
     int digit = int(u_Time * 10)%10;
 
@@ -237,10 +238,10 @@ void Digit_Num()
 
     float tx = v_UV.x / 5 + offX;
     float ty = v_UV.y / 2 + offY;
-    FragColor = texture(u_DigitTexture, vec2(tx, ty));
+    return texture(u_DigitTexture, vec2(tx, ty));
 }
 
-void Digit_Num_AI()
+vec4 Digit_Num_AI()
 {
     // 1. 하드코딩된 입력 숫자 설정
     int inputNumber = int(u_Time * 100); // 여기서 원하는 5자리 숫자를 설정하세요!
@@ -312,7 +313,7 @@ void Digit_Num_AI()
     float ty = localY / rows + offY;
     
     // 5. 색상 샘플링 및 출력
-    FragColor = texture(u_DigitTexture, vec2(tx, ty));
+    return texture(u_DigitTexture, vec2(tx, ty));
 }
 
 
@@ -330,6 +331,8 @@ void main()
     // Brick_Vertical();
     // Brick_Horizontal_AI();
     // Digit();
-    Digit_Num();
-    // Digit_Num_AI();
+    // Digit_Num();
+
+    FragColor   = Circless();  // 0_0
+    FragColor1  = Flag();       // 0_1
 }
