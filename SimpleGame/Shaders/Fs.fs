@@ -320,7 +320,7 @@ void main()
 {
     // Test();
     // Circless();
-    // Flag();
+    Flag();
     // Q1();
     // Q2();
     // Q3();
@@ -330,6 +330,6 @@ void main()
     // Brick_Vertical();
     // Brick_Horizontal_AI();
     // Digit();
-    Digit_Num();
+    // Digit_Num();
     // Digit_Num_AI();
 }

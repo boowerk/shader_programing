@@ -568,7 +568,7 @@ void Renderer::DrawFS()
 	glActiveTexture(GL_TEXTURE10);
 	glBindTexture(GL_TEXTURE_2D, m_numTexture);
 
-	glActiveTexture(GL_TEXTURE15);
+	glActiveTexture(GL_TEXTURE11);
 	glBindTexture(GL_TEXTURE_2D, m_RGBTexture);
 	glActiveTexture(GL_TEXTURE16);
 
